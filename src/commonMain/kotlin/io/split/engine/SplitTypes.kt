@@ -1,4 +1,4 @@
-package commonMain.kotlin.io.split.engine
+package io.split.engine
 
 enum class SplitMode { EQUAL, EXACT, PERCENTAGE, RATIO }
 

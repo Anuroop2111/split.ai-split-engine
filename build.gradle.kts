@@ -1,64 +1,47 @@
 plugins {
   kotlin("multiplatform") version "2.0.21"
-  `maven-publish`
-  id("dev.petuska.npm.publish") version "3.4.1"
-  kotlin("jvm")
 }
 
 group = "io.split"
 version = "0.1.0"
 
+repositories { mavenCentral() }
+
 kotlin {
   jvm()
+
   js(IR) {
-    browser()
-    nodejs()
-    binaries.library()
-    generateTypeScriptDefinitions()
-  }
-  sourceSets {
-    val commonMain by getting
-    val commonTest by getting
-    val jvmMain by getting
-    val jvmTest by getting
-    val jsMain by getting
-    val jsTest by getting
-  }
-  jvmToolchain(8)
-}
-
-// Publishing to Maven
-publishing {
-  publications.withType<MavenPublication> {
-    pom {
-      name.set("split-engine")
-      description.set("Deterministic expense split engine")
-    }
-  }
-  repositories {
-    mavenLocal() // dev convenience
-  }
-}
-
-// Publishing to NPM
-npmPublishing {
-  publications {
-    publication("js") {
-      packageJson {
-        name.set("@anuroop/split-engine")
-        version.set(project.version.toString())
-        description.set("Deterministic expense split engine")
-        main.set("index.js")
-        types.set("index.d.ts")
-        license.set("MIT")
+    nodejs {
+      // We truly don't want any JS tests to run or be configured
+      testTask {
+        enabled = false
       }
     }
+    binaries.library()
+    // keep TS generation off for now (avoids typescript devDep)
+    // generateTypeScriptDefinitions()
   }
 
+  jvmToolchain(17)
+
+  sourceSets {
+    val commonMain by getting
+    val commonTest by getting {
+      dependencies { implementation(kotlin("test")) }
+    }
+
+    val jvmMain by getting
+    val jvmTest by getting {
+      dependencies { implementation(kotlin("test-junit5")) }
+    }
+
+    val jsMain by getting
+    // remove this to avoid pulling kotlin-test-js + npm chain
+    // val jsTest by getting { dependencies { implementation(kotlin("test-js")) } }
+  }
 }
-dependencies {
-  implementation(kotlin("stdlib-jdk8"))
-}
-repositories {
-  mavenCentral()
+
+/** Hard-disable all JS test tasks created by the plugin */
+tasks.matching { it.name.contains("jsTest", ignoreCase = true) }.configureEach {
+  enabled = false
 }

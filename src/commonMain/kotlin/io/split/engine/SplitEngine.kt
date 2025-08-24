@@ -1,10 +1,6 @@
-package commonMain.kotlin.io.split.engine
-
-import com.sun.org.apache.bcel.internal.util.Args.require
-
+package io.split.engine
 
 object SplitEngine {
-    @JvmStatic
     fun computeShares(input: SplitInput): List<Share> = when (input.mode) {
         SplitMode.EQUAL -> equal(input)
         SplitMode.EXACT -> exact(input)
